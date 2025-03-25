@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>轻量版远程提词器</title>
+    <title>轻量版远程提词器 (Gemini)</title>
     <script src="https://unpkg.com/peerjs@1.4.7/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     <style>
@@ -341,7 +341,7 @@
         
         /* Utilities */
         .hidden {
-            display: none !important;
+            display: none;
         }
         
         .flex {
@@ -530,15 +530,6 @@
     </div>
 
     <script>
-        // 加载时确保密码模态框是隐藏的
-        document.addEventListener('DOMContentLoaded', function() {
-            const passwordModal = document.getElementById('passwordModal');
-            if (passwordModal) {
-                passwordModal.classList.add('hidden');
-                console.log("页面加载时已确保密码框隐藏");
-            }
-        });
-
         // Check for dark mode preference
         const prefersDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
         if (prefersDarkMode) {
@@ -567,8 +558,8 @@
         let scrollInterval = null;
         let scrolling = false;
         let scrollSpeed = 2;
-        let hasPassword = false;  // 确保初始状态为false
-        let accessPassword = "";  // 确保初始为空
+        let hasPassword = false;
+        let accessPassword = "";
 
         // Elements
         const roleSelection = document.getElementById('roleSelection');
@@ -578,11 +569,6 @@
         const displayConnectionStatus = document.getElementById('displayConnectionStatus');
         const passwordModal = document.getElementById('passwordModal');
         const passwordInput = document.getElementById('passwordInput');
-        
-        // 确保密码模态框隐藏
-        if (passwordModal) {
-            passwordModal.classList.add('hidden');
-        }
         
         // Initialize PeerJS with public STUN servers for NAT traversal
         function initializePeer(isController) {
@@ -680,12 +666,6 @@
                 if (data.type === 'setPassword') {
                     hasPassword = true;
                     accessPassword = data.password;
-                    return;
-                }
-                
-                if (data.type === 'removePassword') {
-                    hasPassword = false;
-                    accessPassword = "";
                     return;
                 }
                 
@@ -800,12 +780,9 @@
             container.scrollTop = 0;
         }
 
-        // Password protection - 修复的版本
+        // Password protection
         function showPasswordModal() {
-            // 只有当确实需要密码时才显示密码框
-            if (hasPassword && role === 'display') {
-                passwordModal.classList.remove('hidden');
-            }
+            passwordModal.classList.remove('hidden');
         }
 
         function hidePasswordModal() {
@@ -819,10 +796,6 @@
             roleSelection.classList.add('hidden');
             controllerUI.classList.remove('hidden');
             initializePeer(true);
-            
-            // Reset password state when setting up controller
-            hasPassword = false;
-            accessPassword = "";
             
             // Setup controller UI event listeners
             document.getElementById('copyIdBtn').addEventListener('click', () => {
@@ -915,7 +888,6 @@
                 }
             });
             
-            // 修复的密码保护开关处理
             document.getElementById('passwordProtect').addEventListener('change', (e) => {
                 if (e.target.checked) {
                     const password = prompt('请设置一个访问密码:');
@@ -924,7 +896,6 @@
                         accessPassword = password;
                         if (connection) {
                             connection.send({ type: 'setPassword', password: password });
-                            alert('密码保护已启用，只有知道密码的人才能查看显示端内容');
                         }
                     } else {
                         e.target.checked = false;
@@ -933,10 +904,6 @@
                 } else {
                     hasPassword = false;
                     accessPassword = "";
-                    if (connection) {
-                        connection.send({ type: 'removePassword' });
-                        alert('密码保护已关闭');
-                    }
                 }
             });
             
@@ -1004,16 +971,6 @@
             role = 'display';
             roleSelection.classList.add('hidden');
             displayUI.classList.remove('hidden');
-            
-            // 重置密码状态
-            hasPassword = false;
-            accessPassword = "";
-            
-            // 确保密码框是隐藏的
-            if (passwordModal) {
-                passwordModal.classList.add('hidden');
-            }
-            
             initializePeer(false);
             
             document.getElementById('copyDisplayIdBtn').addEventListener('click', () => {
@@ -1045,16 +1002,6 @@
         window.addEventListener('beforeunload', () => {
             if (connection) connection.close();
             if (peer) peer.destroy();
-        });
-        
-        // 添加页面加载测试 - 确保密码模态框初始状态是隐藏的
-        window.addEventListener('load', function() {
-            const modal = document.getElementById('passwordModal');
-            if (modal) {
-                console.log("页面加载完成，密码框状态:", modal.classList.contains('hidden') ? "隐藏" : "显示");
-                // 强制确保隐藏状态
-                modal.classList.add('hidden');
-            }
         });
     </script>
 </body>
